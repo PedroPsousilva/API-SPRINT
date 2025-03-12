@@ -1,61 +1,46 @@
 const connect = require("../db/connect");
+const validateUser = require("../services/validateUser");
+const validateCpf = require("../services/validateCpf");
+
 module.exports = class userController {
   static async createUser(req, res) {
-    const { cpf, email, password, name } = req.body;
+    const { cpf, email, password, name, data_nascimento } = req.body;
 
-    // Verifica se todos os campos estão preenchidos
-    if (!cpf || !email || !password || !name) {
-      return res
-        .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" });
+    const validationError = validateUser(req.body);
+    if (validationError) {
+      return res.status(400).json(validationError);
     }
 
-    // Verifica se o CPF é numérico e tem exatamente 11 dígitos
-    else if (isNaN(cpf) || cpf.length !== 11) {
-      return res
-        .status(400)
-        .json({
-          error: "CPF inválido. Deve conter exatamente 11 dígitos numéricos",
-        });
-    }
+    try {
+      const cpfError = await validateCpf(cpf);
+      if (cpfError) {
+        return res.status(400).json(cpfError);
+      }
 
-    // Verifica se o email contém o caractere @
-    else if (!email.includes("@")) {
-      return res.status(400).json({ error: "Email inválido. Deve conter @" });
-    } else {
-      const query = `INSERT INTO user (cpf, password, email, name) VALUES ( 
-        '${cpf}', 
-        '${password}', 
-        '${email}', 
-        '${name}'
-      )`;
-
-      try {
-        connect.query(query, function (err) {
+      const query = `INSERT INTO usuario (cpf, password, email, name, data_nascimento) VALUES (?, ?, ?, ?, ?)`;
+      connect.query(
+        query,
+        [cpf, password, email, name, data_nascimento],
+        (err) => {
           if (err) {
             if (err.code === "ER_DUP_ENTRY") {
-              console.log("err.code");
-              console.log(err);
-              console.log("code");
-              console.log(err.code);
-              // Verifica se é um erro de chave primária duplicada
-              return res.status(400).json({ error: "CPF já cadastrado" });
+              if (err.message.includes("email")) {
+                return res.status(400).json({ error: "Email já cadastrado" });
+              }
             } else {
-              console.error(err);
+              console.log(err);
               return res
                 .status(500)
-                .json({ error: "Erro interno do servidor" });
+                .json({ error: "Erro interno do servidor", err });
             }
           }
-          console.log("Inserido no Mysql");
           return res
             .status(201)
             .json({ message: "Usuário criado com sucesso" });
-        });
-      } catch (error) {
-        console.error("Erro ao executar a consulta:", error);
-        res.status(500).json({ error: "Erro interno do servidor" });
-      }
+        }
+      );
+    } catch (error) {
+      return res.status(500).json({ error });
     }
   }
 
