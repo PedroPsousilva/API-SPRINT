@@ -17,7 +17,7 @@ module.exports = class userController {
         return res.status(400).json(cpfError);
       }
 
-      const query = `INSERT INTO usuario (cpf, password, email, name, data_nascimento) VALUES (?, ?, ?, ?, ?)`;
+      const query = `INSERT INTO user (cpf, password, email, name, data_nascimento) VALUES (?, ?, ?, ?, ?)`;
       connect.query(
         query,
         [cpf, password, email, name, data_nascimento],
