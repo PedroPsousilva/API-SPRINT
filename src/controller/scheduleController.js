@@ -1,5 +1,5 @@
 const connect = require("../db/connect");
-const validateSchedule = require("../services/validateSchedule");
+const splitDaysSchedule = require("../services/splitDaysSchedule");
 
 // Verificar se o horário de início de um agendamento está dentro de um intervalo de tempo
 function isInTimeRange(timeStart, timeRange) {
@@ -14,7 +14,6 @@ module.exports = class scheduleController {
   static async createSchedule(req, res) {
     const { dateStart, dateEnd, days, user, classroom, timeStart, timeEnd } =
       req.body;
-    console.log(req.body);
     // Verificar se todos os campos estão preenchidos
     if (
       !dateStart ||
@@ -122,7 +121,7 @@ module.exports = class scheduleController {
   static async getSchedulesByIdClassroomRanges(req, res) {
     const classroomID = req.params.id;
     const { weekStart, weekEnd } = req.query; // Variavel para armazenar a semana selecionada
-    console.log(weekStart+' '+weekEnd)
+    console.log(weekStart + " " + weekEnd);
     // Consulta SQL para obter todos os agendamentos para uma determinada sala de aula
     const query = `
     SELECT schedule.*, user.name AS userName
@@ -131,8 +130,6 @@ module.exports = class scheduleController {
     WHERE classroom = '${classroomID}'
     AND (dateStart <= '${weekEnd}' AND dateEnd >= '${weekStart}')
 `;
-
-
 
     try {
       // Executa a consulta
@@ -189,6 +186,7 @@ module.exports = class scheduleController {
         };
 
         // Organiza os agendamentos pelos dias da semana e intervalo de horário
+        splitDaysSchedule;
         results.forEach((schedule) => {
           const days = schedule.days.split(", ");
           const timeRanges = [
@@ -239,42 +237,14 @@ module.exports = class scheduleController {
 `;
 
     try {
-      connect.query(query, function (err, results) {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Erro interno do servidor" });
-        }
-
-        // Objeto para armazenar os agendamentos organizados por dia da semana
-        const schedulesByDay = {
-          Seg: [],
-          Ter: [],
-          Qua: [],
-          Qui: [],
-          Sex: [],
-          Sab: [],
-        };
-
-        // Organiza os agendamentos pelos dias da semana
-        results.forEach((schedule) => {
-          const days = schedule.days.split(", ");
-          days.forEach((day) => {
-            schedulesByDay[day].push(schedule);
-          });
+      const results = await new Promise((resolve, reject) => {
+        connect.query(query, [classroomID], (err, results) => {
+          if (err) return reject(err);
+          resolve(results);
         });
-
-        // Ordena os agendamentos dentro de cada lista com base no timeStart
-        Object.keys(schedulesByDay).forEach((day) => {
-          schedulesByDay[day].sort((a, b) => {
-            const timeStartA = new Date(`1970-01-01T${a.timeStart}`);
-            const timeStartB = new Date(`1970-01-01T${b.timeStart}`);
-            return timeStartA - timeStartB;
-          });
-        });
-
-        // Retorna os agendamentos organizados por dia da semana e ordenados por timeStart
-        return res.status(200).json({ schedulesByDay });
       });
+      const schedulesByDay = splitDaysSchedule(results); // CHAMA O SERVIÇO EXTERNO
+      return res.status(200).json({ schedulesByDay });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
       return res.status(500).json({ error: "Erro interno do servidor" });
@@ -290,42 +260,15 @@ module.exports = class scheduleController {
       JOIN user ON schedule.user = user.cpf
     `;
 
-      connect.query(query, function (err, results) {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Erro interno do servidor" });
-        }
-
-        // Objeto para armazenar os agendamentos organizados por dia da semana
-        const schedulesByDay = {
-          Seg: [],
-          Ter: [],
-          Qua: [],
-          Qui: [],
-          Sex: [],
-          Sab: [],
-        };
-
-        // Organiza os agendamentos pelos dias da semana
-        results.forEach((schedule) => {
-          const days = schedule.days.split(", ");
-          days.forEach((day) => {
-            schedulesByDay[day].push(schedule);
-          });
+      const results = await new Promise((resolve, reject) => {
+        connect.query(query, (err, results) => {
+          if (err) return reject(err);
+          resolve(results);
         });
-
-        // Ordena os agendamentos dentro de cada lista com base no timeStart
-        Object.keys(schedulesByDay).forEach((day) => {
-          schedulesByDay[day].sort((a, b) => {
-            const timeStartA = new Date(`1970-01-01T${a.timeStart}`);
-            const timeStartB = new Date(`1970-01-01T${b.timeStart}`);
-            return timeStartA - timeStartB;
-          });
-        });
-
-        // Retorna os agendamentos organizados por dia da semana e ordenados por timeStart
-        return res.status(200).json({ schedulesByDay });
       });
+
+      const schedulesByDay = splitDaysSchedule(results);
+      return res.status(200).json({ schedulesByDay });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
       return res.status(500).json({ error: "Erro interno do servidor" });

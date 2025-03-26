@@ -1,13 +1,12 @@
 const connect = require("../db/connect");
+const validateClassroom = require("../services/validateClassroom");
 module.exports = class classroomController {
   static async createClassroom(req, res) {
     const { number, description, capacity } = req.body;
 
-    // Verifica se todos os campos estão preenchidos
-    if (!number || !description || !capacity) {
-      return res
-        .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" });
+    const validateError = validateClassroom(req.body);
+    if(validateError){
+      return res.status(400).json(validateError);
     }
 
     // Caso todos os campos estejam preenchidos, realiza a inserção na tabela
@@ -16,20 +15,20 @@ module.exports = class classroomController {
         '${description}', 
         '${capacity}'
       )`;
+   
 
     try {
       connect.query(query, function (err) {
-        if (err) {
+        if(err){
           console.log(err);
-          res.status(500).json({ error: "Erro ao cadastrar sala" });
-          return;
+          return res.status(500).json({error:"Erro teste"})
         }
         console.log("Sala cadastrada com sucesso");
-        res.status(201).json({ message: "Sala cadastrada com sucesso" });
+        return res.status(201).json({ message: "Sala cadastrada com sucesso" });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
@@ -42,11 +41,11 @@ module.exports = class classroomController {
           return res.status(500).json({ error: "Erro interno do servidor" });
         }
         console.log("Salas obtidas com sucesso");
-        res.status(200).json({ classrooms: result });
+        return res.status(200).json({ classrooms: result });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
@@ -66,40 +65,24 @@ module.exports = class classroomController {
         }
 
         console.log("Sala obtida com sucesso");
-        res.status(200).json({
+        return res.status(200).json({
           message: "Obtendo a sala com ID: " + classroomId,
           classroom: result[0],
         });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
   static async updateClassroom(req, res) {
     const { number, description, capacity } = req.body;
 
-    // Validar campos obrigatórios
-    if (!number || !description || !capacity) {
-      return res
-        .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" });
-    }
-
     try {
       // Verificar se a sala existe
       const findQuery = `SELECT * FROM classroom WHERE number = ?`;
       connect.query(findQuery, [number], function (err, result) {
-        if (err) {
-          console.error("Erro ao buscar a sala:", err);
-          return res.status(500).json({ error: "Erro interno do servidor" });
-        }
-
-        if (result.length === 0) {
-          return res.status(404).json({ error: "Sala não encontrada" });
-        }
-
         // Atualizar a sala
         const updateQuery = `
               UPDATE classroom 
@@ -118,13 +101,13 @@ module.exports = class classroomController {
             }
 
             console.log("Sala atualizada com sucesso");
-            res.status(200).json({ message: "Sala atualizada com sucesso" });
+            return res.status(200).json({ message: "Sala atualizada com sucesso" });
           }
         );
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
@@ -145,12 +128,10 @@ module.exports = class classroomController {
           // Verificar se existem reservas associadas
           if (reservations.length > 0) {
             // Impedir exclusão e retornar erro
-            return res
-              .status(400)
-              .json({
-                error:
-                  "Não é possível excluir a sala, pois há reservas associadas.",
-              });
+            return res.status(400).json({
+              error:
+                "Não é possível excluir a sala, pois há reservas associadas.",
+            });
           } else {
             // Deletar a sala de aula
             const deleteQuery = `DELETE FROM classroom WHERE number = ?`;
@@ -167,14 +148,14 @@ module.exports = class classroomController {
               }
 
               console.log("Sala deletada com sucesso");
-              res.status(200).json({ message: "Sala excluída com sucesso" });
+              return res.status(200).json({ message: "Sala excluída com sucesso" });
             });
           }
         }
       );
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
-      res.status(500).json({ error: "Erro interno do servidor" });
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 };

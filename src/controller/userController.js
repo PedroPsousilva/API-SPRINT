@@ -11,6 +11,7 @@ module.exports = class userController {
       return res.status(400).json(validationError);
     }
 
+
     try {
       const cpfError = await validateCpf(cpf);
       if (cpfError) {
