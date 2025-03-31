@@ -92,9 +92,9 @@ module.exports = class userController {
   }
 
   static async getUserById(req, res) {
-    const userId = req.params.id;
+    const userCPF = req.params.cpf;
     const query = `SELECT * FROM user WHERE cpf = ?`;
-    const values = [userId];
+    const values = [userCPF];
 
     try {
       connect.query(query, values, function (err, results) {
@@ -108,7 +108,7 @@ module.exports = class userController {
         }
 
         return res.status(200).json({
-          message: "Obtendo usuário com ID: " + userId,
+          message: "Obtendo usuário com CPF: " + userCPF,
           user: results[0],
         });
       });
@@ -160,10 +160,11 @@ module.exports = class userController {
   static async deleteUser(req, res) {
     const userCPF = req.params.cpf;
     const query = `DELETE FROM user WHERE cpf = ?`;
-    const values = [userCPF];
+    
 
     try {
-      connect.query(query, values, function (err, results) {
+      connect.query(query, userCPF, function (err, results) {
+        
         if (err) {
           console.error(err);
           return res.status(500).json({ error: "Erro interno do servidor" });
@@ -175,7 +176,7 @@ module.exports = class userController {
 
         return res
           .status(200)
-          .json({ message: "Usuário excluído com ID: " + userId });
+          .json({ message: "Usuário excluído com CPF: " + userCPF });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
