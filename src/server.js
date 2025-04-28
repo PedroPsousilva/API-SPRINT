@@ -1,10 +1,10 @@
 const app = require("./index");
-const cors = require('cors');
+const cors = require("cors");
 
 // Configuração do CORS com origens permitidas
 const corsOptions = {
-  origin: '*', // IP de origens permitidas
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  origin: "*", // IP de origens permitidas
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
 };

@@ -1,5 +1,6 @@
 const connect = require("../db/connect");
 const validateUser = require("../services/validateUser");
+const jwt = require("jsonwebtoken");
 const validateCpf = require("../services/validateCpf");
 
 module.exports = class userController {
@@ -10,7 +11,6 @@ module.exports = class userController {
     if (validationError) {
       return res.status(400).json(validationError);
     }
-
 
     try {
       const cpfError = await validateCpf(cpf);
@@ -59,9 +59,21 @@ module.exports = class userController {
           return res.status(401).json({ error: "Credenciais inválidas" });
         }
 
-        return res
-          .status(200)
-          .json({ message: "Login realizado com sucesso", user: results[0] });
+        const user = results[0];
+
+        if (user.password !== password) {
+          return res.status(403).json({ error: "Senha Incorreta" });
+        }
+
+        const token = jwt.sign({ id: user.id_usuario }, process.env.SECRET, {
+          expiresIn: "1h",
+        });
+        delete user.password;
+        return res.status(200).json({
+          message: "Login bem-sucedido",
+          user,
+          token,
+        });
       });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
@@ -123,7 +135,7 @@ module.exports = class userController {
     const { email, password, name } = req.body;
     console.log("cpf: ", cpf);
 
-    const validationError = validateUser({cpf, email, password, name});
+    const validationError = validateUser({ cpf, email, password, name });
     if (validationError) {
       return res.status(400).json(validationError);
     }
@@ -160,11 +172,9 @@ module.exports = class userController {
   static async deleteUser(req, res) {
     const userCPF = req.params.cpf;
     const query = `DELETE FROM user WHERE cpf = ?`;
-    
 
     try {
       connect.query(query, userCPF, function (err, results) {
-        
         if (err) {
           console.error(err);
           return res.status(500).json({ error: "Erro interno do servidor" });

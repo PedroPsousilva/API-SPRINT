@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const verifyJWT = require('../services/verifyJWT');
 
 const userController = require("../controller/userController");
 const classroomController = require("../controller/classroomController");
@@ -7,8 +8,8 @@ const scheduleController = require("../controller/scheduleController");
 //User
 router.post("/user/", userController.createUser);
 router.post("/user/login", userController.postLogin);
-router.get("/user/", userController.getAllUsers);
-router.get("/user/:cpf", userController.getUserById);
+router.get("/user/",verifyJWT, userController.getAllUsers);
+router.get("/user/:cpf",verifyJWT, userController.getUserById);
 router.put("/user/:cpf", userController.updateUser);
 router.delete("/user/:cpf", userController.deleteUser);
 
