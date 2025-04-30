@@ -15,24 +15,29 @@ module.exports = class scheduleController {
     const { dateStart, dateEnd, days, user, classroom, timeStart, timeEnd } =
       req.body;
     // Verificar se todos os campos estão preenchidos
-    if (
-      !dateStart ||
-      !dateEnd ||
-      !days ||
-      !user ||
-      !classroom ||
-      !timeStart ||
-      !timeEnd
-    ) {
-      return res
-        .status(400)
-        .json({ error: "Todos os campos devem ser preenchidos" });
-    }
+ // Verificar se todos os campos estão preenchidos
+if (
+  !dateStart ||
+  !dateEnd ||
+  !days ||
+  !user ||
+  !classroom ||
+  !timeStart ||
+  !timeEnd
+) {
+  return res
+    .status(400)
+    .json({ error: "Todos os campos devem ser preenchidos" });
+}
 
-    // Converter o array days em uma string separada por vírgulas
-    const daysString = days.map((day) => `${day}`).join(", ");
-    console.log(daysString);
-
+// Caso 'days' seja uma string, use-a diretamente
+let daysString;
+if (typeof days === 'string') {
+  daysString = days; // Se já for uma string com os dias separados por vírgula
+} else if (Array.isArray(days)) {
+  // Caso 'days' seja um array, transforme-o em uma string
+  daysString = days.join(", ");
+}
     // Verificar se o tempo está dentro do intervalo permitido
     const isWithinTimeRange = (time) => {
       const [hours, minutes] = time.split(":").map(Number);
