@@ -1,6 +1,7 @@
 const connect = require("../db/connect");
 const splitDaysSchedule = require("../services/splitDaysSchedule");
 
+
 // Verificar se o horário de início de um agendamento está dentro de um intervalo de tempo
 function isInTimeRange(timeStart, timeRange) {
   const [start, end] = timeRange.split(" - ");
