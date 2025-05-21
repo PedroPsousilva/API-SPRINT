@@ -17,8 +17,8 @@ END $$
 
 DELIMITER ;
 
-SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('aaaa');
-SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('Pedro');
-SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('Evelyn');
-SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('teste');
-SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('jon3');
+-- SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('aaaa');
+-- SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('Pedro');
+-- SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('Evelyn');
+-- SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('teste');
+-- SELECT ListarQuantidadeDeReservasPorUsuarioPeloNome('jon3');
