@@ -257,6 +257,40 @@ if (typeof days === 'string') {
     }
   }
 
+  // Rota para pegar as reservas pelo CPF do usuário
+static async getSchedulesByUserCPF(req, res) {
+  const userCPF = req.params.cpf; // CPF do usuário vindo da URL
+
+  // Consulta SQL para pegar as reservas do usuário com o CPF específico
+  const query = `
+    SELECT schedule.*, classroom.name AS classroomName, user.name AS userName
+    FROM schedule
+    JOIN user ON schedule.user = user.cpf
+    JOIN classroom ON schedule.classroom = classroom.number
+    WHERE schedule.user = '${userCPF}'
+  `;
+
+  try {
+    connect.query(query, function (err, results) {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Erro interno do servidor" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Nenhuma reserva encontrada para esse usuário" });
+      }
+
+      return res.status(200).json({ schedule: results });
+
+    });
+  } catch (error) {
+    console.error("Erro ao executar a consulta:", error);
+    return res.status(500).json({ error: "Erro interno do servidor" });
+  }
+}
+
+  
   static async getAllSchedules(req, res) {
     try {
       // Consulta SQL para obter todos os agendamentos

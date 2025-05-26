@@ -103,27 +103,23 @@ module.exports = class userController {
     }
   }
 
-  static async getUserById(req, res) {
+  static async getUserByCPF(req, res) {
     const userCPF = req.params.cpf;
-    const query = `SELECT * FROM user WHERE cpf = ?`;
+    const sql = `SELECT * FROM user WHERE cpf = ?`;
     const values = [userCPF];
-
+  
     try {
-      connect.query(query, values, function (err, results) {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Erro interno do servidor" });
-        }
-
-        if (results.length === 0) {
-          return res.status(404).json({ error: "Usuário não encontrado" });
-        }
-
-        return res.status(200).json({
-          message: "Obtendo usuário com CPF: " + userCPF,
-          user: results[0],
-        });
+      const results = await query(sql, values);
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+  
+      return res.status(200).json({
+        message: "Usuário encontrado",
+        user: results[0],
       });
+  
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
       return res.status(500).json({ error: "Erro interno do servidor" });

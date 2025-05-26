@@ -9,7 +9,7 @@ const scheduleController = require("../controller/scheduleController");
 router.post("/user/", userController.createUser);
 router.post("/user/login", userController.postLogin);
 router.get("/user/",verifyJWT, userController.getAllUsers);
-router.get("/user/:cpf",verifyJWT, userController.getUserById);
+router.get("/user/:cpf",verifyJWT, userController.getUserByCPF);
 router.put("/user/:cpf",userController.updateUser);
 router.delete("/user/:cpf", userController.deleteUser);
 
@@ -24,6 +24,7 @@ router.delete("/classroom/:number", classroomController.deleteClassroom);
 router.post("/schedule/", scheduleController.createSchedule);
 router.get("/schedule/", scheduleController.getAllSchedules);
 router.get("/schedule/:id", scheduleController.getSchedulesByIdClassroom);
+router.get("/schedule/:cpf", scheduleController.getSchedulesByUserCPF);
 router.get("/schedule/ranges/:id", scheduleController.getSchedulesByIdClassroomRanges);
 router.delete("/schedule/:id", scheduleController.deleteSchedule);
 
