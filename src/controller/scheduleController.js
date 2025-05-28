@@ -1,7 +1,6 @@
 const connect = require("../db/connect");
 const splitDaysSchedule = require("../services/splitDaysSchedule");
 
-
 // Verificar se o horário de início de um agendamento está dentro de um intervalo de tempo
 function isInTimeRange(timeStart, timeRange) {
   const [start, end] = timeRange.split(" - ");
@@ -16,29 +15,29 @@ module.exports = class scheduleController {
     const { dateStart, dateEnd, days, user, classroom, timeStart, timeEnd } =
       req.body;
     // Verificar se todos os campos estão preenchidos
- // Verificar se todos os campos estão preenchidos
-if (
-  !dateStart ||
-  !dateEnd ||
-  !days ||
-  !user ||
-  !classroom ||
-  !timeStart ||
-  !timeEnd
-) {
-  return res
-    .status(400)
-    .json({ error: "Todos os campos devem ser preenchidos" });
-}
+    // Verificar se todos os campos estão preenchidos
+    if (
+      !dateStart ||
+      !dateEnd ||
+      !days ||
+      !user ||
+      !classroom ||
+      !timeStart ||
+      !timeEnd
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Todos os campos devem ser preenchidos" });
+    }
 
-// Caso 'days' seja uma string, use-a diretamente
-let daysString;
-if (typeof days === 'string') {
-  daysString = days; // Se já for uma string com os dias separados por vírgula
-} else if (Array.isArray(days)) {
-  // Caso 'days' seja um array, transforme-o em uma string
-  daysString = days.join(", ");
-}
+    // Caso 'days' seja uma string, use-a diretamente
+    let daysString;
+    if (typeof days === "string") {
+      daysString = days; // Se já for uma string com os dias separados por vírgula
+    } else if (Array.isArray(days)) {
+      // Caso 'days' seja um array, transforme-o em uma string
+      daysString = days.join(", ");
+    }
     // Verificar se o tempo está dentro do intervalo permitido
     const isWithinTimeRange = (time) => {
       const [hours, minutes] = time.split(":").map(Number);
@@ -234,13 +233,12 @@ if (typeof days === 'string') {
   static async getSchedulesByIdClassroom(req, res) {
     const classroomID = req.params.id;
 
-    // Consulta SQL para obter todos os agendamentos para uma determinada sala de aula
     const query = `
-  SELECT schedule.*, user.name AS userName
-  FROM schedule
-  JOIN user ON schedule.user = user.cpf
-  WHERE classroom = '${classroomID}'
-`;
+      SELECT schedule.*, user.name AS userName
+      FROM schedule
+      JOIN user ON schedule.user = user.cpf
+      WHERE classroom = ?
+    `;
 
     try {
       const results = await new Promise((resolve, reject) => {
@@ -249,7 +247,8 @@ if (typeof days === 'string') {
           resolve(results);
         });
       });
-      const schedulesByDay = splitDaysSchedule(results); // CHAMA O SERVIÇO EXTERNO
+
+      const schedulesByDay = splitDaysSchedule(results);
       return res.status(200).json({ schedulesByDay });
     } catch (error) {
       console.error("Erro ao executar a consulta:", error);
@@ -257,40 +256,65 @@ if (typeof days === 'string') {
     }
   }
 
-  // Rota para pegar as reservas pelo CPF do usuário
-static async getSchedulesByUserCPF(req, res) {
-  const userCPF = req.params.cpf; // CPF do usuário vindo da URL
+  static async getSchedulesByUserCPF(req, res) {
+    const userCPF = req.params.cpf;
+    
+    console.log("CPF: ", userCPF);
 
-  // Consulta SQL para pegar as reservas do usuário com o CPF específico
-  const query = `
-    SELECT schedule.*, classroom.name AS classroomName, user.name AS userName
-    FROM schedule
-    JOIN user ON schedule.user = user.cpf
-    JOIN classroom ON schedule.classroom = classroom.number
-    WHERE schedule.user = '${userCPF}'
-  `;
+    const query = `
+      SELECT schedule.*, classroom.description AS classroomName, user.name AS userName
+      FROM schedule
+      JOIN user ON schedule.user = user.cpf
+      JOIN classroom ON schedule.classroom = classroom.number
+      WHERE schedule.user = ?
+    `;
 
-  try {
-    connect.query(query, function (err, results) {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Erro interno do servidor" });
-      }
+    try {
+      connect.query(query, [userCPF], function (err, results) {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: "Erro interno do servidor" });
+        }
 
-      if (results.length === 0) {
-        return res.status(404).json({ error: "Nenhuma reserva encontrada para esse usuário" });
-      }
+        if (results.length === 0) {
+          return res
+            .status(404)
+            .json({ error: "Nenhuma reserva encontrada para esse usuário" });
+        }
 
-      return res.status(200).json({ schedule: results });
+        const schedulesByDay = {
+          Seg: [],
+          Ter: [],
+          Qua: [],
+          Qui: [],
+          Sex: [],
+          Sab: [],
+        };
 
-    });
-  } catch (error) {
-    console.error("Erro ao executar a consulta:", error);
-    return res.status(500).json({ error: "Erro interno do servidor" });
+        results.forEach((schedule) => {
+          const diasSemana = schedule.days.split(","); // Ex: ["Seg", "Qua"]
+
+          diasSemana.forEach((dia) => {
+            if (schedulesByDay[dia]) {
+              schedulesByDay[dia].push({
+                id: schedule.id,
+                nome: schedule.userName,
+                classroomName: schedule.classroomName,
+                horaInicio: schedule.timeStart,
+                horaFim: schedule.timeEnd,
+              });
+            }
+          });
+        });
+
+        return res.status(200).json({ schedule: schedulesByDay });
+      });
+    } catch (error) {
+      console.log("Erro ao executar a consulta:", error);
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
   }
-}
 
-  
   static async getAllSchedules(req, res) {
     try {
       // Consulta SQL para obter todos os agendamentos
