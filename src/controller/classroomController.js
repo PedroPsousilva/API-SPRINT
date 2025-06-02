@@ -40,7 +40,7 @@ module.exports = class classroomController {
           console.error("Erro ao obter salas:", err);
           return res.status(500).json({ error: "Erro interno do servidor" });
         }
-        console.log("Salas obtidas com sucesso ---------");
+        console.log("Salas obtidas com sucesso!");
         return res.status(200).json({ classrooms: result });
       });
     } catch (error) {
