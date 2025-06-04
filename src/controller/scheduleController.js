@@ -258,11 +258,11 @@ module.exports = class scheduleController {
 
   static async getSchedulesByUserCPF(req, res) {
     const userCPF = req.params.cpf;
-    
+
     console.log("CPF: ", userCPF);
 
     const query = `
-      SELECT schedule.*, classroom.description AS classroomName, user.name AS userName
+      SELECT schedule.*, classroom.number AS classroomName, user.name AS userName
       FROM schedule
       JOIN user ON schedule.user = user.cpf
       JOIN classroom ON schedule.classroom = classroom.number

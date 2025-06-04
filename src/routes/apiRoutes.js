@@ -10,22 +10,22 @@ router.post("/user/", userController.createUser);
 router.post("/user/login", userController.postLogin);
 router.get("/user/",verifyJWT, userController.getAllUsers);
 router.get("/user/:cpf",verifyJWT, userController.getUserByCPF);
-router.put("/user/:cpf",userController.updateUser);
-router.delete("/user/:cpf", userController.deleteUser);
+router.put("/user/:cpf", verifyJWT, userController.updateUser);
+router.delete("/user/:cpf", verifyJWT, userController.deleteUser);
 
 //Classroom
-router.post("/classroom/", classroomController.createClassroom);
-router.get("/classroom/", classroomController.getAllClassrooms);
-router.get("/classroom/:number", classroomController.getClassroomById);
-router.put("/classroom/", classroomController.updateClassroom);
-router.delete("/classroom/:number", classroomController.deleteClassroom);
+router.post("/classroom/", verifyJWT, classroomController.createClassroom);
+router.get("/classroom/", verifyJWT, classroomController.getAllClassrooms);
+router.get("/classroom/:number", verifyJWT, classroomController.getClassroomById);
+router.put("/classroom/", verifyJWT, classroomController.updateClassroom);
+router.delete("/classroom/:number", verifyJWT, classroomController.deleteClassroom);
 
 //Schedule
-router.post("/schedule/", scheduleController.createSchedule);
-router.get("/schedule/", scheduleController.getAllSchedules);
-router.get("/scheduleRoom/:id", scheduleController.getSchedulesByIdClassroom);
-router.get("/scheduleUser/:cpf", scheduleController.getSchedulesByUserCPF);
-router.get("/schedule/ranges/:id", scheduleController.getSchedulesByIdClassroomRanges);
-router.delete("/schedule/:id", scheduleController.deleteSchedule);
+router.post("/schedule/", verifyJWT, scheduleController.createSchedule);
+router.get("/schedule/", verifyJWT, scheduleController.getAllSchedules);
+router.get("/scheduleRoom/:id", verifyJWT, scheduleController.getSchedulesByIdClassroom);
+router.get("/scheduleUser/:cpf", verifyJWT, scheduleController.getSchedulesByUserCPF);
+router.get("/schedule/ranges/:id", verifyJWT, scheduleController.getSchedulesByIdClassroomRanges);
+router.delete("/schedule/:id", verifyJWT, scheduleController.deleteSchedule);
 
 module.exports = router;
