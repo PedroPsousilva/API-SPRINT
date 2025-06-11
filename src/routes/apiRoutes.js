@@ -8,7 +8,7 @@ const scheduleController = require("../controller/scheduleController");
 //User
 router.post("/user/", userController.createUser);
 router.post("/user/login", userController.postLogin);
-router.get("/user/",verifyJWT, userController.getAllUsers);
+router.get("/user/", verifyJWT, userController.getAllUsers);
 router.get("/user/:cpf",verifyJWT, userController.getUserByCPF);
 router.put("/user/:cpf", verifyJWT, userController.updateUser);
 router.delete("/user/:cpf", verifyJWT, userController.deleteUser);

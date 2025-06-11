@@ -95,7 +95,7 @@ module.exports = class scheduleController {
                 VALUES (
                     '${dateStart}',
                     '${dateEnd}',
-                    '${daysString}',
+                    '${days}',
                     '${user}',
                     '${classroom}',
                     '${timeStart}',

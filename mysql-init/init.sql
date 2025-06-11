@@ -61,7 +61,7 @@ CREATE TABLE `schedule` (
   PRIMARY KEY (`id`),
   KEY `user` (`user`),
   KEY `classroom` (`classroom`),
-  CONSTRAINT `schedule_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`cpf`),
+  CONSTRAINT `schedule_ibfk_1` FOREIGN KEY (`user`) REFERENCES `user` (`cpf`) on DELETE CASCADE on UPDATE CASCADE,
   CONSTRAINT `schedule_ibfk_2` FOREIGN KEY (`classroom`) REFERENCES `classroom` (`number`)
 ) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -99,7 +99,6 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES ('12121212121','12','aaa@aaa','aaaa'),('12345678901','1234','pedro@pedrom','Pedro'),('12345678909','1234','eve@example.com','Evelyn'),('12345678933','senha123','teste@teste','teste'),('12345678980','1234','jon3@example.com','jon3');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
